@@ -1,0 +1,97 @@
+import org.junit.Test;
+import org.junit.Before;
+import org.junit.After;
+import static org.junit.Assert.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
+public class EncryptionMachineTest {
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+    private final PrintStream originalOut = System.out;
+
+    @Before
+    public void setUpStreams() {
+        System.setOut(new PrintStream(outContent));
+    }
+
+    @Test
+    public void testEncryptLetter_LowerCase() {
+        // Test regular lowercase letters
+        assertEquals('d', EncryptionMachine.encryptLetter('a'));
+        assertEquals('e', EncryptionMachine.encryptLetter('b'));
+        assertEquals('z', EncryptionMachine.encryptLetter('w'));
+    }
+
+    @Test
+    public void testEncryptLetter_Wrapping() {
+        // Test wrapping around the alphabet
+        assertEquals('a', EncryptionMachine.encryptLetter('x'));
+        assertEquals('b', EncryptionMachine.encryptLetter('y'));
+        assertEquals('c', EncryptionMachine.encryptLetter('z'));
+    }
+
+    @Test
+    public void testEncryptLetter_NonAlphabetic() {
+        // Test non-alphabetic characters
+        assertEquals(' ', EncryptionMachine.encryptLetter(' '));
+        assertEquals('1', EncryptionMachine.encryptLetter('1'));
+        assertEquals('!', EncryptionMachine.encryptLetter('!'));
+    }
+
+    @Test
+    public void testEncryptWord_SingleWord() {
+        assertEquals("khoor", EncryptionMachine.encryptWord("hello"));
+        assertEquals("zruog", EncryptionMachine.encryptWord("world"));
+    }
+
+    @Test
+    public void testEncryptWord_EmptyString() {
+        assertEquals("", EncryptionMachine.encryptWord(""));
+    }
+
+    @Test
+    public void testEncryptWord_WithSpecialCharacters() {
+        assertEquals("khoor!", EncryptionMachine.encryptWord("hello!"));
+        assertEquals("zruog123", EncryptionMachine.encryptWord("world123"));
+    }
+
+    @Test
+    public void testRunEncryption_BasicFlow() {
+        // Simulate user input
+        String simulatedInput = "secret\n2\nhello\nworld\n";
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(simulatedInput.getBytes());
+        System.setIn(inputStream);
+
+        // Run the encryption
+        EncryptionMachine.runEncryption();
+
+        // Verify output contains expected encrypted words
+        String output = outContent.toString();
+        assertTrue(output.contains("vhfuhw")); // encrypted "secret"
+        assertTrue(output.contains("khoor")); // encrypted "hello"
+        assertTrue(output.contains("zruog")); // encrypted "world"
+    }
+
+    @Test
+    public void testRunEncryption_SingleWord() {
+        // Simulate user input with single word
+        String simulatedInput = "key\n1\ntest\n";
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(simulatedInput.getBytes());
+        System.setIn(inputStream);
+
+        // Run the encryption
+        EncryptionMachine.runEncryption();
+
+        // Verify output
+        String output = outContent.toString();
+        assertTrue(output.contains("nhb")); // encrypted "key"
+        assertTrue(output.contains("whvw")); // encrypted "test"
+    }
+
+    @After
+    public void restoreStreams() {
+        System.setOut(originalOut);
+        System.setIn(System.in);
+    }
+}
